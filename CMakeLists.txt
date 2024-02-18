@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.25)
 
 project(QuaSAR
   DESCRIPTION "SAR control software"
@@ -8,6 +8,7 @@ project(QuaSAR
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/src/cmake)
 include(qtprojectbuild)
+include(cmake/all.cmake)
 
 project_version_patch_clean()
 
@@ -17,8 +18,8 @@ set(IDENTIFIER "${PROJECT_NAME}")
 
 add_project_meta(META_FILES)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set_language_standard(23)
+check_language_features()
 
 # 3rd party packages locating
 find_package(QT NAMES Qt5 REQUIRED COMPONENTS Core Quick)
@@ -35,7 +36,6 @@ find_package(Qt5 REQUIRED COMPONENTS
 
 include_directories(src/c++ libs)
 
-# Source including
 file(GLOB_RECURSE CPP_SOURCES
   src/c++/application/*
   src/c++/gui/*
@@ -56,7 +56,6 @@ set(PROJECT_SOURCES
   resources/resources.qrc
 )
 
-# Making executable
 add_executable(${PROJECT_NAME}
   ${PROJECT_SOURCES}
   ${CPP_SOURCES}
@@ -73,41 +72,36 @@ add_subdirectory(src/c++/sdk) # deprecated
 add_subdirectory(libs/LPVL)
 add_subdirectory(libs/CCL)
 add_subdirectory(libs/libquasarsdk)
-#add_subdirectory(libs/Corrosion) # requires rustc package
 add_subdirectory(services/UpdateService)
 
 # Linking
 target_link_libraries(${PROJECT_NAME}
-  PRIVATE Qt${QT_VERSION_MAJOR}::Core
-  Qt5::Quick
-  Qt5::Widgets
-  Qt5::Network
-  Qt5::Location
-  Qt5::Positioning
-  Qt5::QuickControls2
-  Qt5::Concurrent
-  #Corrosion
-  argparse
-  SDK
-  LPVL
-  CCL
-  libquasarsdk
+  PRIVATE
+    Qt5::Core
+    Qt5::Quick
+    Qt5::Widgets
+    Qt5::Network
+    Qt5::Location
+    Qt5::Positioning
+    Qt5::QuickControls2
+    Qt5::Concurrent
+    #Corrosion
+    argparse
+    SDK
+    LPVL
+    CCL
+    libquasarsdk
 )
 
-install(TARGETS ${PROJECT_NAME}
-  BUNDLE DESTINATION .
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
-
-# Git version fetching
-execute_process(COMMAND git remote update WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-execute_process(COMMAND git describe --tags --abbrev=0 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_VARIABLE GIT_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+target_add_metadata_definitions(${PROJECT_NAME})
+enable_static_crt()
 
 # C++ definitions
 add_definitions(
   -DPROJECT_NAME="${PROJECT_NAME}"
   -DPROJECT_VERSION="${GIT_VERSION}"
   -DPROJECT_COMPANY="${COMPANY}"
+  -DM_PI=3.14159265358979323846
 )
 
 message("${PROJECT_NAME} version ${PROJECT_VERSION} compiled successfully")

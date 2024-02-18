@@ -10,3 +10,6 @@
 [submodule "libs/CCL"]
 	path = libs/CCL
 	url = https://github.com/whs31/CCL.git
+[submodule "cmake"]
+	path = cmake
+	url = ../cmake.git

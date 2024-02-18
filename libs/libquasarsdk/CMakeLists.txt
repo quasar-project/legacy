@@ -54,4 +54,8 @@ else()
   )
 endif()
 
+target_compile_definitions(${PROJECT_NAME} PUBLIC
+  -DM_PI=3.14159265358979323846
+)
+
 target_include_directories(${PROJECT_NAME} PUBLIC include src)
